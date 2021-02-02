@@ -1,9 +1,9 @@
-# datasette-mbtiles
+# datasette-tiles
 
-[![PyPI](https://img.shields.io/pypi/v/datasette-mbtiles.svg)](https://pypi.org/project/datasette-mbtiles/)
-[![Changelog](https://img.shields.io/github/v/release/simonw/datasette-mbtiles?include_prereleases&label=changelog)](https://github.com/simonw/datasette-mbtiles/releases)
-[![Tests](https://github.com/simonw/datasette-mbtiles/workflows/Test/badge.svg)](https://github.com/simonw/datasette-mbtiles/actions?query=workflow%3ATest)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/simonw/datasette-mbtiles/blob/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/datasette-tiles.svg)](https://pypi.org/project/datasette-tiles/)
+[![Changelog](https://img.shields.io/github/v/release/simonw/datasette-tiles?include_prereleases&label=changelog)](https://github.com/simonw/datasette-tiles/releases)
+[![Tests](https://github.com/simonw/datasette-tiles/workflows/Test/badge.svg)](https://github.com/simonw/datasette-tiles/actions?query=workflow%3ATest)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/simonw/datasette-tiles/blob/main/LICENSE)
 
 Datasette plugin for serving MBTiles map tiles
 
@@ -11,7 +11,7 @@ Datasette plugin for serving MBTiles map tiles
 
 Install this plugin in the same environment as Datasette.
 
-    $ datasette install datasette-mbtiles
+    $ datasette install datasette-tiles
 
 ## Usage
 
@@ -21,7 +21,7 @@ Usage instructions go here.
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
 
-    cd datasette-mbtiles
+    cd datasette-tiles
     python3 -mvenv venv
     source venv/bin/activate
 
