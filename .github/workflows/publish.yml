@@ -58,7 +58,7 @@ jobs:
     - name: Wait a few seconds before deploying demo
       run: |
         # Packages take a few seconds to be installable from PyPI
-        sleep 15
+        sleep 90
     - name: Set up Cloud Run
       uses: google-github-actions/setup-gcloud@master
       with:
