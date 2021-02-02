@@ -1,7 +1,24 @@
+import asyncio
 from datasette.app import Datasette
 from datasette.database import Database
 from datasette_tiles.utils import detect_mtiles_databases
 import pytest
+
+
+# Needed because of https://stackoverflow.com/a/56238383
+# to allow me to use scope="module" on the ds() fixture below
+@pytest.fixture(scope="module")
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(scope="module")
+async def ds():
+    datasette = Datasette([], memory=True)
+    await datasette.invoke_startup()
+    return datasette
 
 
 @pytest.mark.asyncio
@@ -13,29 +30,23 @@ import pytest
         ("/-/tiles/basemap/8/6/5.png", 404),
     ],
 )
-async def test_tile(path, expected_status_code):
-    datasette = Datasette([], memory=True)
-    await datasette.invoke_startup()
-    response = await datasette.client.get(path)
+async def test_tile(ds, path, expected_status_code):
+    response = await ds.client.get(path)
     assert response.status_code == expected_status_code
     if expected_status_code == 200:
         assert response.headers["content-type"] == "image/png"
 
 
 @pytest.mark.asyncio
-async def test_tiles_index():
-    datasette = Datasette([], memory=True)
-    await datasette.invoke_startup()
-    response = await datasette.client.get("/-/tiles")
+async def test_tiles_index(ds):
+    response = await ds.client.get("/-/tiles")
     assert response.status_code == 200
     assert '<li><a href="/-/tiles/basemap">basemap</a></li>' in response.text
 
 
 @pytest.mark.asyncio
-async def test_tiles_explorer():
-    datasette = Datasette([], memory=True)
-    await datasette.invoke_startup()
-    response = await datasette.client.get("/-/tiles/basemap")
+async def test_tiles_explorer(ds):
+    response = await ds.client.get("/-/tiles/basemap")
     assert response.status_code == 200
     assert '"/-/tiles/basemap/{z}/{x}/{y}.png";' in response.text
 
@@ -72,3 +83,24 @@ async def test_detect_mtiles_databases(i, create_table, should_be_mtiles):
     result = await detect_mtiles_databases(datasette)
     expected = [name] if should_be_mtiles else []
     assert result == expected
+
+
+_FRAGMENT = '<li><a href="/-/tiles/basemap">Explore these tiles on a map</a></li>'
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "path,should_have_fragment",
+    [
+        ("/:memory:", False),
+        ("/basemap", True),
+        ("/basemap/grids", False),
+        ("/basemap/tiles", True),
+    ],
+)
+async def test_database_and_column_action_menus(ds, path, should_have_fragment):
+    response = await ds.client.get(path)
+    if should_have_fragment:
+        assert _FRAGMENT in response.text
+    else:
+        assert _FRAGMENT not in response.text

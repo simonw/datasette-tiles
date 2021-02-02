@@ -89,3 +89,35 @@ async def explorer(datasette, request):
             },
         )
     )
+
+
+@hookimpl
+def database_actions(datasette, database):
+    async def inner():
+        mbtiles_databases = await detect_mtiles_databases(datasette)
+        if database in mbtiles_databases:
+            return [
+                {
+                    "href": datasette.urls.path("/-/tiles/{}".format(database)),
+                    "label": "Explore these tiles on a map",
+                }
+            ]
+
+    return inner
+
+
+@hookimpl
+def table_actions(datasette, database, table):
+    async def inner():
+        if table != "tiles":
+            return None
+        mbtiles_databases = await detect_mtiles_databases(datasette)
+        if database in mbtiles_databases:
+            return [
+                {
+                    "href": datasette.urls.path("/-/tiles/{}".format(database)),
+                    "label": "Explore these tiles on a map",
+                }
+            ]
+
+    return inner

@@ -25,7 +25,7 @@ It can then serve tiles from those databases at the following URL:
 
     /-/tiles/db-name/zoom/x/y.png
 
-An example map for each database demonstrating the configured minimum and maximum zoom for that database can be found at `/-/tiles/db-name`
+An example map for each database demonstrating the configured minimum and maximum zoom for that database can be found at `/-/tiles/db-name` - this can also be accessed via the table and database action menus for that database.
 
 Visit `/-/tiles` for an index page of attached valid databases.
 
