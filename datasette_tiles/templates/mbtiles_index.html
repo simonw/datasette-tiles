@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Tiles{% endblock %}
+
+{% block content %}
+<h1>Tiles</h1>
+
+{% if not mbtiles_databases %}
+    <p>There are no attached databases containing MBTiles.</p>
+{% endif %}
+
+<ul>
+{% for database in mbtiles_databases %}
+    <li><a href="/-/tiles/{{ database }}">{{ database }}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}
