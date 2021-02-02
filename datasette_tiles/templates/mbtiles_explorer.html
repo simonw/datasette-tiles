@@ -17,7 +17,8 @@ window.DATASETTE_CLUSTER_MAP_TILE_LAYER = "/-/tiles/{{ db_name }}/{z}/{x}/{y}.pn
 window.DATASETTE_CLUSTER_MAP_TILE_LAYER_OPTIONS = {
     "minZoom": {{ min_zoom }},
     "maxZoom": {{ max_zoom }},
-    "tms": true
+    "tms": true{% if attribution %},
+    "attribution": {{ attribution|safe }}{% endif %}
 };
 import('{{ datasette_leaflet_url }}')
     .then((leaflet) => {

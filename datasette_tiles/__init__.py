@@ -1,6 +1,7 @@
 from datasette import hookimpl
 from datasette.utils.asgi import Response, NotFound
 from datasette_tiles.utils import detect_mtiles_databases
+import json
 
 
 @hookimpl
@@ -75,6 +76,7 @@ async def explorer(datasette, request):
         min_zoom = metadata["minzoom"]
     if metadata.get("maxzoom"):
         max_zoom = metadata["maxzoom"]
+    attribution = metadata.get("attribution") or None
     return Response.html(
         await datasette.render_template(
             "mbtiles_explorer.html",
@@ -86,6 +88,7 @@ async def explorer(datasette, request):
                 "default_zoom": default_zoom,
                 "min_zoom": min_zoom,
                 "max_zoom": max_zoom,
+                "attribution": json.dumps(attribution),
             },
         )
     )

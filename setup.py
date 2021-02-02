@@ -29,7 +29,7 @@ setup(
     packages=["datasette_tiles"],
     entry_points={"datasette": ["mbtiles = datasette_tiles"]},
     install_requires=["datasette", "datasette-leaflet>=0.2.2"],
-    extras_require={"test": ["pytest", "pytest-asyncio", "datasette-basemap"]},
+    extras_require={"test": ["pytest", "pytest-asyncio", "datasette-basemap>=0.2"]},
     tests_require=["datasette-tiles[test]"],
     package_data={"datasette_tiles": ["templates/*"]},
     python_requires=">=3.6",

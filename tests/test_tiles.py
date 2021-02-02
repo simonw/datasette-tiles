@@ -49,6 +49,8 @@ async def test_tiles_explorer(ds):
     response = await ds.client.get("/-/tiles/basemap")
     assert response.status_code == 200
     assert '"/-/tiles/basemap/{z}/{x}/{y}.png";' in response.text
+    # Attribution should be there too
+    assert '"attribution": "\\u00a9 OpenStreetMap contributors"' in response.text
 
 
 @pytest.mark.asyncio
