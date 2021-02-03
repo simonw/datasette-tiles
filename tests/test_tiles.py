@@ -51,6 +51,13 @@ async def test_tiles_explorer(ds):
     assert '"/-/tiles/basemap/{z}/{x}/{y}.png";' in response.text
     # Attribution should be there too
     assert '"attribution": "\\u00a9 OpenStreetMap contributors"' in response.text
+    # And the metadata
+    assert "<h2>Metadata</h2>" in response.text
+    assert (
+        "<tr><th>attribution</th><td>© OpenStreetMap contributors</td></tr>"
+        in response.text
+    )
+    assert "<tr><th>name</th><td>datasette-basemap 0.2</td></tr>" in response.text
 
 
 @pytest.mark.asyncio

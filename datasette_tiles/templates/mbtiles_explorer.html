@@ -5,12 +5,29 @@
 {% block extra_head %}
 <script src="{{ datasette_leaflet_url }}"></script>
 <link rel="stylesheet" href="{{ datasette_leaflet_css_url }}">
+<style type="text/css">
+.tiles-metadata th {
+    font-weight: bold;
+}
+.tiles-metadata td {
+    border-top: none;
+    border-left: none;
+}
+</style>
 {% endblock %}
 
 {% block content %}
 <h1>{{ db_name }}</h1>
 
 <div id="explorer"></div>
+
+<h2>Metadata</h2>
+
+<table class="tiles-metadata">
+    {% for key, value in metadata.items() %}
+    <tr><th>{{ key }}</th><td>{{ value }}</td></tr>
+    {% endfor %}
+</table>
 
 <script type="module">
 window.DATASETTE_CLUSTER_MAP_TILE_LAYER = "/-/tiles/{{ db_name }}/{z}/{x}/{y}.png";
@@ -24,7 +41,6 @@ import('{{ datasette_leaflet_url }}')
     .then((leaflet) => {
     let div = document.querySelector("#explorer");
     div.style.height = '80vh';
-    document.querySelector('.content').appendChild(div);
     let tiles = leaflet.tileLayer(
         window.DATASETTE_CLUSTER_MAP_TILE_LAYER,
         window.DATASETTE_CLUSTER_MAP_TILE_LAYER_OPTIONS
