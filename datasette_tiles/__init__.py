@@ -43,7 +43,7 @@ def register_routes():
 async def index(datasette):
     return Response.html(
         await datasette.render_template(
-            "mbtiles_index.html",
+            "tiles_index.html",
             {"mbtiles_databases": await detect_mtiles_databases(datasette)},
         )
     )
@@ -114,7 +114,7 @@ async def explorer(datasette, request):
     attribution = metadata.get("attribution") or None
     return Response.html(
         await datasette.render_template(
-            "mbtiles_explorer.html",
+            "tiles_explorer.html",
             {
                 "metadata": metadata,
                 "db_name": db_name,
@@ -153,7 +153,7 @@ async def tiles_stack_explorer(datasette):
     max_zoom = max(max_zooms)
     return Response.html(
         await datasette.render_template(
-            "mbtiles_stack_explorer.html",
+            "tiles_stack_explorer.html",
             {
                 "default_latitude": 0,
                 "default_longitude": 0,
