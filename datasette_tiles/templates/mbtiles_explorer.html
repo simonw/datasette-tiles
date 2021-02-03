@@ -17,7 +17,9 @@
 {% endblock %}
 
 {% block content %}
-<h1>{{ db_name }}</h1>
+<h1>{{ metadata.name or db_name }}</h1>
+
+<p><a href="{{ db_path }}">{{ db_name }}</a>: <a href="{{ db_path }}/tiles">tiles</a>, <a href="{{ db_path }}/metadata">metadata</a></p>
 
 <div id="explorer"></div>
 
