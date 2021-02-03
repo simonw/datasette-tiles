@@ -3,6 +3,20 @@ from datasette.utils.asgi import Response, NotFound
 from datasette_tiles.utils import detect_mtiles_databases, tiles_stack_database_order
 import json
 
+# 256x256 PNG of colour #dddddd, compressed using https://squoosh.app
+PNG_404 = (
+    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x01\x00\x00\x00\x01\x00\x04\x00\x00"
+    b"\x00\x00\xbc\xe9\x1a\xbb\x00\x00\x00\x9cIDATx\xda\xed\xce1\x01\x00\x00\x0c\x02"
+    b"\xa0\xd9?\xe3\xba\x18\xc3\x07\x12\x90\xbf\xad\x08\x08\x08\x08\x08\x08\x08\x08"
+    b"\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08"
+    b"\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08"
+    b"\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08"
+    b"\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08"
+    b"\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08"
+    b"\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\x08\xac"
+    b"\x03\x05\xddg\xde\x01\xd26\xe7\xdd\x00\x00\x00\x00IEND\xaeB`\x82"
+)
+
 SELECT_TILE_SQL = """
 select
   tile_data
@@ -59,7 +73,7 @@ async def tile(request, datasette):
     db = datasette.get_database(db_name)
     tile = await load_tile(db, request)
     if tile is None:
-        raise NotFound("Tile not found")
+        return Response(body=PNG_404, content_type="image/png", status=404)
     return Response(body=tile, content_type="image/png")
 
 
@@ -70,7 +84,7 @@ async def tiles_stack(datasette, request):
         tile = await load_tile(database, request)
         if tile is not None:
             return Response(body=tile, content_type="image/png")
-    raise NotFound("Tile not found")
+    return Response(body=PNG_404, content_type="image/png", status=404)
 
 
 async def explorer(datasette, request):
