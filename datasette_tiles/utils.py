@@ -27,12 +27,15 @@ async def detect_mtiles_databases(datasette):
     ]
 
 
-async def tiles_stack_database_order(datasette, request):
-    mtiles_databases = await detect_mtiles_databases(datasette)
-    database_names = [
-        name for name in datasette.databases.keys() if name in mtiles_databases
-    ]
-    database_order = list(reversed(database_names))
+async def tiles_stack_database_order(datasette):
+    config = datasette.plugin_config("datasette-tiles") or {}
+    stack_order = config.get("tiles-stack-order")
+    if not stack_order:
+        mtiles_databases = await detect_mtiles_databases(datasette)
+        stack_order = [
+            name for name in datasette.databases.keys() if name in mtiles_databases
+        ]
+    database_order = list(reversed(stack_order))
     # if datasette-basemap is installed, move basemap to the end
     plugins = [
         p["name"] for p in (await datasette.client.get("/-/plugins.json")).json()

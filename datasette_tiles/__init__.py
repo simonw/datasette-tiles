@@ -64,7 +64,7 @@ async def tile(request, datasette):
 
 
 async def tiles_stack(datasette, request):
-    priority_order = await tiles_stack_database_order(datasette, request)
+    priority_order = await tiles_stack_database_order(datasette)
     # Try each database in turn
     for database in priority_order:
         tile = await load_tile(database, request)

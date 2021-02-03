@@ -26,7 +26,22 @@ def event_loop():
 
 @pytest.fixture(scope="module")
 async def ds_tiles_stack():
-    datasette = Datasette([], memory=True, pdb=True)
+    return await ds_tiles()
+
+
+@pytest.fixture(scope="module")
+async def ds_tiles_stack_with_stack_order():
+    return await ds_tiles(
+        {
+            "plugins": {
+                "datasette-tiles": {"tiles-stack-order": ["world", "country", "city2"]}
+            }
+        }
+    )
+
+
+async def ds_tiles(metadata=None):
+    datasette = Datasette([], metadata=metadata or {}, memory=True)
     for db_name, tiles in (
         ("world", [[1, 1, 1]]),
         ("country", [[1, 1, 2], [1, 2, 2]]),
@@ -34,6 +49,9 @@ async def ds_tiles_stack():
         ("city2", [[1, 3, 3]]),
     ):
         db = datasette.add_database(Database(datasette, memory_name=db_name))
+        # During test runs database tables may exist already
+        if await db.table_exists("tiles"):
+            continue
         await db.execute_write(CREATE_TILES_TABLE, block=True)
         await db.execute_write(CREATE_METADATA_TABLE, block=True)
         for pair in (("name", db_name), ("format", "png")):
