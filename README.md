@@ -35,6 +35,8 @@ You can install the [datasette-basemap](https://datasette.io/plugins/datasette-b
 
 `datasette-tiles` can be configured to serve tiles from multiple attached MBTiles files, searching each database in order for a tile and falling back to the next in line if that tile is not found.
 
+For a demo of this in action, visit https://datasette-tiles-demo.datasette.io/-/tiles-stack and zoom in on Japan. It should start showing [Stamen's Toner map](maps.stamen.com) of Japan once you get to zoom level 6 and 7.
+
 The `/-/tiles-stack/1/1/1.png` endpoint provides this feature.
 
 If you start Datasette like this:
