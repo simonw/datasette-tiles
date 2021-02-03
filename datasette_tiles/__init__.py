@@ -1,7 +1,18 @@
 from datasette import hookimpl
 from datasette.utils.asgi import Response, NotFound
-from datasette_tiles.utils import detect_mtiles_databases
+from datasette_tiles.utils import detect_mtiles_databases, tiles_stack_database_order
 import json
+
+SELECT_TILE_SQL = """
+select
+  tile_data
+from
+  tiles
+where
+  zoom_level = :z
+  and tile_column = :x
+  and tile_row = :y
+""".strip()
 
 
 @hookimpl
@@ -10,6 +21,7 @@ def register_routes():
         (r"/-/tiles$", index),
         (r"/-/tiles/(?P<db_name>[^/]+)$", explorer),
         (r"/-/tiles/(?P<db_name>[^/]+)/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png$", tile),
+        (r"/-/tiles-stack/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png$", tiles_stack),
     ]
 
 
@@ -22,26 +34,12 @@ async def index(datasette):
     )
 
 
-async def tile(request, datasette):
-    db_name = request.url_vars["db_name"]
-    mbtiles_databases = await detect_mtiles_databases(datasette)
-    if db_name not in mbtiles_databases:
-        raise NotFound("Not a valid mbtiles database")
-    db = datasette.get_database(db_name)
+async def load_tile(db, request):
     z = request.url_vars["z"]
     x = request.url_vars["x"]
     y = request.url_vars["y"]
     result = await db.execute(
-        """
-    select
-      tile_data
-    from
-      tiles
-    where 
-      zoom_level = :z
-      and tile_column = :x
-      and tile_row = :y
-    """,
+        SELECT_TILE_SQL,
         {
             "z": z,
             "x": x,
@@ -49,8 +47,30 @@ async def tile(request, datasette):
         },
     )
     if not result.rows:
+        return None
+    return result.rows[0][0]
+
+
+async def tile(request, datasette):
+    db_name = request.url_vars["db_name"]
+    mbtiles_databases = await detect_mtiles_databases(datasette)
+    if db_name not in mbtiles_databases:
+        raise NotFound("Not a valid mbtiles database")
+    db = datasette.get_database(db_name)
+    tile = await load_tile(db, request)
+    if tile is None:
         raise NotFound("Tile not found")
-    return Response(body=result.rows[0][0], content_type="image/png")
+    return Response(body=tile, content_type="image/png")
+
+
+async def tiles_stack(datasette, request):
+    priority_order = await tiles_stack_database_order(datasette, request)
+    # Try each database in turn
+    for database in priority_order:
+        tile = await load_tile(database, request)
+        if tile is not None:
+            return Response(body=tile, content_type="image/png")
+    raise NotFound("Tile not found")
 
 
 async def explorer(datasette, request):
@@ -83,6 +103,7 @@ async def explorer(datasette, request):
             {
                 "metadata": metadata,
                 "db_name": db_name,
+                "db_path": datasette.urls.database(db_name),
                 "default_latitude": default_latitude,
                 "default_longitude": default_longitude,
                 "default_zoom": default_zoom,

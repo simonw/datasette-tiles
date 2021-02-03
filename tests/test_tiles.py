@@ -1,24 +1,7 @@
-import asyncio
 from datasette.app import Datasette
 from datasette.database import Database
 from datasette_tiles.utils import detect_mtiles_databases
 import pytest
-
-
-# Needed because of https://stackoverflow.com/a/56238383
-# to allow me to use scope="module" on the ds() fixture below
-@pytest.fixture(scope="module")
-def event_loop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="module")
-async def ds():
-    datasette = Datasette([], memory=True)
-    await datasette.invoke_startup()
-    return datasette
 
 
 @pytest.mark.asyncio
