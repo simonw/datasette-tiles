@@ -40,7 +40,11 @@ async def tiles_stack_database_order(datasette):
     plugins = [
         p["name"] for p in (await datasette.client.get("/-/plugins.json")).json()
     ]
-    if "datasette-basemap" in plugins and "basemap" in database_order:
+    if (
+        not config.get("tiles-stack-order")
+        and "datasette-basemap" in plugins
+        and "basemap" in database_order
+    ):
         database_order.remove("basemap")
         database_order.append("basemap")
     return [datasette.databases[name] for name in database_order]

@@ -64,3 +64,9 @@ async def test_tiles_stack_order_setting(ds_tiles_stack_with_stack_order):
         "/-/tiles-stack/1/2/2.png"
     )
     assert response.text == "country:1/2/2"
+    # The custom configuration should ensure basemap is
+    # not part of the stack:
+    response = await ds_tiles_stack_with_stack_order.client.get(
+        "/-/tiles-stack/3/3/3.png"
+    )
+    assert response.status_code == 404
