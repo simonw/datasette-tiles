@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Tile stack explorer{% endblock %}
+
+{% block extra_head %}
+<script src="{{ datasette_leaflet_url }}"></script>
+<link rel="stylesheet" href="{{ datasette_leaflet_css_url }}">
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Tile stack explorer</h1>
+
+<div id="explorer"></div>
+<div id="info"></div>
+
+<script type="module">
+window.DATASETTE_CLUSTER_MAP_TILE_LAYER = "/-/tiles-stack/{z}/{x}/{y}.png";
+window.DATASETTE_CLUSTER_MAP_TILE_LAYER_OPTIONS = {
+    "minZoom": {{ min_zoom }},
+    "maxZoom": {{ max_zoom }},
+    "tms": true{% if attribution %},
+    "attribution": {{ attribution|safe }}{% endif %}
+};
+import('{{ datasette_leaflet_url }}')
+    .then((leaflet) => {
+    let div = document.querySelector("#explorer");
+    let info = document.querySelector("#info");
+    div.style.height = '80vh';
+    let tiles = leaflet.tileLayer(
+        window.DATASETTE_CLUSTER_MAP_TILE_LAYER,
+        window.DATASETTE_CLUSTER_MAP_TILE_LAYER_OPTIONS
+    );
+    let map = leaflet.map(div, {
+        center: leaflet.latLng({{ default_latitude }}, {{ default_longitude }}),
+        zoom: {{ default_zoom }},
+        layers: [tiles]
+    });
+    map.on('zoomend', function(ev) {
+        let zoom = ev.target.getZoom();
+        info.innerHTML = `Zoom: ${zoom}`;
+    });
+});
+</script>
+
+{% endblock %}

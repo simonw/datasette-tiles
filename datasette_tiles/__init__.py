@@ -35,6 +35,7 @@ def register_routes():
         (r"/-/tiles$", index),
         (r"/-/tiles/(?P<db_name>[^/]+)$", explorer),
         (r"/-/tiles/(?P<db_name>[^/]+)/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png$", tile),
+        (r"/-/tiles-stack$", tiles_stack_explorer),
         (r"/-/tiles-stack/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png$", tiles_stack),
     ]
 
@@ -121,6 +122,42 @@ async def explorer(datasette, request):
                 "default_latitude": default_latitude,
                 "default_longitude": default_longitude,
                 "default_zoom": default_zoom,
+                "min_zoom": min_zoom,
+                "max_zoom": max_zoom,
+                "attribution": json.dumps(attribution),
+            },
+        )
+    )
+
+
+async def tiles_stack_explorer(datasette):
+    attribution = ""
+    # Find min/max zoom by looking at the stack
+    priority_order = await tiles_stack_database_order(datasette)
+    min_zooms = []
+    max_zooms = []
+    attributions = []
+    for db in priority_order:
+        metadata = {
+            row["name"]: row["value"]
+            for row in (await db.execute("select name, value from metadata")).rows
+        }
+        if "minzoom" in metadata:
+            min_zooms.append(int(metadata["minzoom"]))
+        if "maxzoom" in metadata:
+            max_zooms.append(int(metadata["maxzoom"]))
+    # If all attributions are the same, use that - otherwise leave blank
+    if len(set(attributions)) == 1:
+        attribution = attributions[0]
+    min_zoom = min(min_zooms)
+    max_zoom = max(max_zooms)
+    return Response.html(
+        await datasette.render_template(
+            "mbtiles_stack_explorer.html",
+            {
+                "default_latitude": 0,
+                "default_longitude": 0,
+                "default_zoom": min_zoom,
                 "min_zoom": min_zoom,
                 "max_zoom": max_zoom,
                 "attribution": json.dumps(attribution),

@@ -99,10 +99,13 @@ async def test_database_and_column_action_menus(ds, path, should_have_fragment):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("path", [
-    "/-/tiles/basemap/10/10/10.png",
-    "/-/tiles-stack/10/10/10.png",
-])
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/-/tiles/basemap/10/10/10.png",
+        "/-/tiles-stack/10/10/10.png",
+    ],
+)
 async def test_tile_404s(ds, path):
     response = await ds.client.get(path)
     assert response.status_code == 404

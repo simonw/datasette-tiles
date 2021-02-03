@@ -70,3 +70,16 @@ async def test_tiles_stack_order_setting(ds_tiles_stack_with_stack_order):
         "/-/tiles-stack/3/3/3.png"
     )
     assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_tiles_stack_explorer(ds_tiles_stack):
+    response = await ds_tiles_stack.client.get("/-/tiles-stack")
+    assert response.status_code == 200
+    for fragment in (
+        '"/-/tiles-stack/{z}/{x}/{y}.png";',
+        '"minZoom": 0,',
+        '"maxZoom": 6,',
+        '"attribution": ""',
+    ):
+        assert fragment in response.text
