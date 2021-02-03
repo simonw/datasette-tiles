@@ -31,6 +31,36 @@ Visit `/-/tiles` for an index page of attached valid databases.
 
 You can install the [datasette-basemap](https://datasette.io/plugins/datasette-basemap) plugin to get a `basemap` default set of tiles, handling zoom levels 0 to 6 using OpenStreetMap.
 
+### Tile stacks
+
+`datasette-tiles` can be configured to serve tiles from multiple attached MBTiles files, searching each database in order for a tile and falling back to the next in line if that tile is not found.
+
+The `/-/tiles-stack/1/1/1.png` endpoint provides this feature.
+
+If you start Datasette like this:
+
+    datasette world.mbtiles country.mbtiles city1.mbtiles city2.mbtiles
+
+Any requests for a tile from the `/-/tiles-stack` path will first check the `city2` database, than `city1`, then `country`, then `world`.
+
+If you have the [datasette-basemap](https://datasette.io/plugins/datasette-basemap) plugin installed it will be given special treatment: the `basemap` database will always be the last database checked for a tile.
+
+Rather than rely on the order in which databases were attached, you can instead configure an explicit order using the `tiles-stack-order` plugin setting. Add the following to your `metadata.json` file:
+
+```json
+{
+    "plugins": {
+        "datasette-tiles": {
+            "tiles-stack-order": ["world", "country"]
+        }
+    }
+}
+```
+
+You can then run Datasette like this:
+
+    datasette -m metadata.json country.mbtiles world.mbtiles
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
