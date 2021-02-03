@@ -1,6 +1,3 @@
-import asyncio
-from datasette.app import Datasette
-from datasette.database import Database
 import pytest
 
 
