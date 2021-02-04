@@ -151,8 +151,8 @@ async def explorer(datasette, request):
                 "current_x": x_tile,
                 "current_y": y_tile,
                 "compass": {
-                    "n": tile_to_latlon(x_tile, y_tile - 1, zoom),
-                    "s": tile_to_latlon(x_tile, y_tile + 1, zoom),
+                    "n": tile_to_latlon(x_tile, y_tile + 1, zoom),
+                    "s": tile_to_latlon(x_tile, y_tile - 1, zoom),
                     "e": tile_to_latlon(x_tile + 1, y_tile, zoom),
                     "w": tile_to_latlon(x_tile - 1, y_tile, zoom),
                 },
