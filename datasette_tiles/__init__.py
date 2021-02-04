@@ -2,6 +2,7 @@ from datasette import hookimpl
 from datasette.utils.asgi import Response, NotFound
 from datasette_tiles.utils import detect_mtiles_databases, tiles_stack_database_order
 import json
+import math
 
 # 256x256 PNG of colour #dddddd, compressed using https://squoosh.app
 PNG_404 = (
@@ -108,10 +109,21 @@ async def explorer(datasette, request):
     min_zoom = 0
     max_zoom = 19
     if metadata.get("minzoom"):
-        min_zoom = metadata["minzoom"]
+        min_zoom = int(metadata["minzoom"])
     if metadata.get("maxzoom"):
-        max_zoom = metadata["maxzoom"]
+        max_zoom = int(metadata["maxzoom"])
     attribution = metadata.get("attribution") or None
+
+    # Provided location data
+    lat = float(request.args.get('lat', default_latitude))
+    lon = float(request.args.get('lon', default_longitude))
+    zoom = int(request.args.get('z', default_zoom))
+    if zoom > max_zoom:
+        zoom = max_zoom
+    if zoom < min_zoom:
+        zoom = min_zoom
+    x_tile, y_tile = latlon_to_tile_with_adjust(lat, lon, zoom)
+
     return Response.html(
         await datasette.render_template(
             "tiles_explorer.html",
@@ -125,9 +137,48 @@ async def explorer(datasette, request):
                 "min_zoom": min_zoom,
                 "max_zoom": max_zoom,
                 "attribution": json.dumps(attribution),
+                "current_latitude": lat,
+                "current_longitude": lon,
+                "current_zoom": zoom,
+                "current_x": x_tile,
+                "current_y": y_tile,
+                "compass": {
+                    "n": tile_to_latlon(x_tile, y_tile-1, zoom),
+                    "s": tile_to_latlon(x_tile, y_tile+1, zoom),
+                    "e": tile_to_latlon(x_tile+1, y_tile, zoom),
+                    "w": tile_to_latlon(x_tile-1, y_tile, zoom),
+                },
             },
         )
     )
+
+
+def latlon_to_tile(lat, lon, zoom):
+    x_tile = (lon + 180) / 360 * 2**zoom;
+    y_tile = (1 - math.log(math.tan(math.radians(lat)) + 1/math.cos(math.radians(lat))) / math.pi) / 2 * 2**zoom;
+    # MBTiles are reverse OSM
+    y_tile  = 2**zoom - y_tile - 1
+    return x_tile, y_tile
+
+# Given a lat/lon, convert it to OSM tile co-ordinates (nearest actual tile,
+# adjusted so the point will be near the centre of a 2x2 tiled map).
+def latlon_to_tile_with_adjust(lat, lon, zoom):
+    x_tile, y_tile = latlon_to_tile(lat, lon, zoom)
+
+    # Try and have point near centre of map
+    if x_tile - int(x_tile) > 0.5:
+        x_tile += 1
+    if y_tile - int(y_tile) > 0.5:
+        y_tile += 1
+
+    return int(x_tile), int(y_tile)
+
+def tile_to_latlon(x, y, zoom):
+    n = 2 ** zoom
+    y = n - y - 1 # mbtiles are reverse of OSM
+    lon = x / n * 360 - 180
+    lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
+    return { 'lat': lat, 'lon': lon }
 
 
 async def tiles_stack_explorer(datasette):

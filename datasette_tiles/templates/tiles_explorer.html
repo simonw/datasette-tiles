@@ -21,7 +21,18 @@
 
 <p><a href="{{ db_path }}">{{ db_name }}</a>: <a href="{{ db_path }}/tiles">tiles</a>, <a href="{{ db_path }}/metadata">metadata</a></p>
 
-<div id="explorer"></div>
+<div id="explorer">
+    <img style="vertical-align:bottom" src="/-/tiles/{{ db_name }}/{{ current_zoom }}/{{ current_x - 1 }}/{{ current_y + 1 }}.png" alt=""><img style="vertical-align:bottom" src="/-/tiles/{{ db_name }}/{{ current_zoom }}/{{ current_x }}/{{ current_y + 1 }}.png" alt="">
+    <br>
+    <img src="/-/tiles/{{ db_name }}/{{ current_zoom }}/{{ current_x - 1 }}/{{ current_y }}.png" alt=""><img src="/-/tiles/{{ db_name }}/{{ current_zoom }}/{{ current_x }}/{{ current_y }}.png" alt="">
+    <br>
+    <a href="?lat={{ compass.n.lat }}&amp;lon={{ compass.n.lon }}&amp;z={{ current_zoom }}">North</a>
+    <a href="?lat={{ compass.e.lat }}&amp;lon={{ compass.e.lon }}&amp;z={{ current_zoom }}">East</a>
+    <a href="?lat={{ compass.s.lat }}&amp;lon={{ compass.s.lon }}&amp;z={{ current_zoom }}">South</a>
+    <a href="?lat={{ compass.w.lat }}&amp;lon={{ compass.w.lon }}&amp;z={{ current_zoom }}">West</a>
+    <a href="?lat={{ current_latitude }}&amp;lon={{ current_longitude }}&amp;z={{ current_zoom + 1 }}">Zoom in</a>
+    <a href="?lat={{ current_latitude }}&amp;lon={{ current_longitude }}&amp;z={{ current_zoom - 1 }}">Zoom out</a>
+</div>
 
 <h2>Metadata</h2>
 
