@@ -1,3 +1,6 @@
+import math
+
+
 async def detect_mtiles_databases(datasette):
     await datasette.refresh_schemas()
     internal = datasette.get_database("_internal")
@@ -48,3 +51,41 @@ async def tiles_stack_database_order(datasette):
         database_order.remove("basemap")
         database_order.append("basemap")
     return [datasette.databases[name] for name in database_order]
+
+
+def latlon_to_tile(lat, lon, zoom):
+    x_tile = (lon + 180) / 360 * 2 ** zoom
+    y_tile = (
+        (
+            1
+            - math.log(math.tan(math.radians(lat)) + 1 / math.cos(math.radians(lat)))
+            / math.pi
+        )
+        / 2
+        * 2 ** zoom
+    )
+    # MBTiles are reverse OSM
+    y_tile = 2 ** zoom - y_tile - 1
+    return x_tile, y_tile
+
+
+# Given a lat/lon, convert it to OSM tile co-ordinates (nearest actual tile,
+# adjusted so the point will be near the centre of a 2x2 tiled map).
+def latlon_to_tile_with_adjust(lat, lon, zoom):
+    x_tile, y_tile = latlon_to_tile(lat, lon, zoom)
+
+    # Try and have point near centre of map
+    if x_tile - int(x_tile) > 0.5:
+        x_tile += 1
+    if y_tile - int(y_tile) > 0.5:
+        y_tile += 1
+
+    return int(x_tile), int(y_tile)
+
+
+def tile_to_latlon(x, y, zoom):
+    n = 2 ** zoom
+    y = n - y - 1  # mbtiles are reverse of OSM
+    lon = x / n * 360 - 180
+    lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
+    return {"lat": lat, "lon": lon}
