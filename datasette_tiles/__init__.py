@@ -144,6 +144,8 @@ async def explorer(datasette, request):
                 "attribution": json.dumps(attribution),
                 "current_latitude": lat,
                 "current_longitude": lon,
+                "can_zoom_in": zoom < max_zoom,
+                "can_zoom_out": zoom > min_zoom,
                 "current_zoom": zoom,
                 "current_x": x_tile,
                 "current_y": y_tile,
