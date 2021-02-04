@@ -133,6 +133,7 @@ async def explorer(datasette, request):
         await datasette.render_template(
             "tiles_explorer.html",
             {
+                "nojs": request.args.get("nojs") or request.args.get("lat"),
                 "metadata": metadata,
                 "db_name": db_name,
                 "db_path": datasette.urls.database(db_name),

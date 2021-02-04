@@ -60,6 +60,7 @@ window.DATASETTE_CLUSTER_MAP_TILE_LAYER_OPTIONS = {
     "tms": true{% if attribution %},
     "attribution": {{ attribution|safe }}{% endif %}
 };
+{% if not nojs %}
 import('{{ datasette_leaflet_url }}')
     .then((leaflet) => {
     let div = document.querySelector("#explorer");
@@ -73,7 +74,11 @@ import('{{ datasette_leaflet_url }}')
         zoom: {{ default_zoom }},
         layers: [tiles]
     });
+    let p = document.createElement("p");
+    p.innerHTML = '<a href="?nojs=1">Explore without JavaScript</a>';
+    div.insertAdjacentElement('afterend', p);
 });
+{% endif %}
 </script>
 
 {% endblock %}
