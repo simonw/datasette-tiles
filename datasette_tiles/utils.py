@@ -77,8 +77,9 @@ def latlon_to_tile_with_adjust(lat, lon, zoom):
     # Try and have point near centre of map
     if x_tile - int(x_tile) > 0.5:
         x_tile += 1
-    if y_tile - int(y_tile) > 0.5:
-        y_tile += 1
+    # Different to X because MBTiles are reverse OSM
+    if y_tile - int(y_tile) < 0.5:
+        y_tile -= 1
 
     return int(x_tile), int(y_tile)
 
