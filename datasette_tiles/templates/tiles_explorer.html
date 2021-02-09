@@ -64,6 +64,7 @@ window.DATASETTE_CLUSTER_MAP_TILE_LAYER_OPTIONS = {
 import('{{ datasette_leaflet_url }}')
     .then((leaflet) => {
     let div = document.querySelector("#explorer");
+    div.innerHTML = '';
     div.style.height = '80vh';
     let tiles = leaflet.tileLayer(
         window.DATASETTE_CLUSTER_MAP_TILE_LAYER,
