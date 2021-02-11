@@ -41,8 +41,13 @@ def register_routes():
         (r"/-/tiles$", index),
         (r"/-/tiles/(?P<db_name>[^/]+)$", explorer),
         (r"/-/tiles/(?P<db_name>[^/]+)/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png$", tile),
+        (
+            r"/-/tiles-tms/(?P<db_name>[^/]+)/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png$",
+            tile_tms,
+        ),
         (r"/-/tiles-stack$", tiles_stack_explorer),
         (r"/-/tiles-stack/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png$", tiles_stack),
+        (r"/-/tiles-stack-tms/(?P<z>\d+)/(?P<x>\d+)/(?P<y>\d+)\.png$", tiles_stack_tms),
     ]
 
 
@@ -55,10 +60,12 @@ async def index(datasette):
     )
 
 
-async def load_tile(db, request):
-    z = request.url_vars["z"]
-    x = request.url_vars["x"]
-    y = request.url_vars["y"]
+async def load_tile(db, request, tms):
+    z = int(request.url_vars["z"])
+    x = int(request.url_vars["x"])
+    y = int(request.url_vars["y"])
+    if not tms:
+        y = int(math.pow(2, z) - 1 - y)
     result = await db.execute(
         SELECT_TILE_SQL,
         {
@@ -73,25 +80,41 @@ async def load_tile(db, request):
 
 
 async def tile(request, datasette):
+    return await _tile(request, datasette, tms=False)
+
+
+async def tile_tms(request, datasette):
+    return await _tile(request, datasette, tms=True)
+
+
+async def _tile(request, datasette, tms):
     db_name = request.url_vars["db_name"]
     mbtiles_databases = await detect_mtiles_databases(datasette)
     if db_name not in mbtiles_databases:
         raise NotFound("Not a valid mbtiles database")
     db = datasette.get_database(db_name)
-    tile = await load_tile(db, request)
+    tile = await load_tile(db, request, tms)
     if tile is None:
         return Response(body=PNG_404, content_type="image/png", status=404)
     return Response(body=tile, content_type="image/png")
 
 
-async def tiles_stack(datasette, request):
+async def _tiles_stack(datasette, request, tms):
     priority_order = await tiles_stack_database_order(datasette)
     # Try each database in turn
     for database in priority_order:
-        tile = await load_tile(database, request)
+        tile = await load_tile(database, request, tms=tms)
         if tile is not None:
             return Response(body=tile, content_type="image/png")
     return Response(body=PNG_404, content_type="image/png", status=404)
+
+
+async def tiles_stack(datasette, request):
+    return await _tiles_stack(datasette, request, tms=False)
+
+
+async def tiles_stack_tms(datasette, request):
+    return await _tiles_stack(datasette, request, tms=True)
 
 
 async def explorer(datasette, request):

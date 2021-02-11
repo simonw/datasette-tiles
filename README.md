@@ -31,13 +31,55 @@ Visit `/-/tiles` for an index page of attached valid databases.
 
 You can install the [datasette-basemap](https://datasette.io/plugins/datasette-basemap) plugin to get a `basemap` default set of tiles, handling zoom levels 0 to 6 using OpenStreetMap.
 
+### Tile coordinate systems
+
+There are two tile coordinate systems in common use for online maps. The first is used by OpenStreetMap and Google Maps, the second is from a specification called [Tile Map Service](https://en.wikipedia.org/wiki/Tile_Map_Service), or TMS.
+
+Both systems use three components: `z/x/y` - where `z` is the zoom level, `x` is the column and `y` is the row.
+
+The difference is in the way the `y` value is counted. OpenStreetMap has y=0 at the top. TMS has y=0 at the bottom.
+
+An illustrative example: at zoom level 2 the map is divided into 16 total tiles. The OpenStreetMap scheme numbers them like so:
+
+    0/0  1/0  2/0  3/0
+    0/1  1/1  2/1  3/1
+    0/2  1/2  2/2  3/2
+    0/3  1/3  2/3  3/3
+
+The TMS scheme looks like this:
+
+    0/3  1/3  2/3  3/3
+    0/2  1/2  2/2  3/2
+    0/1  1/1  2/1  3/1
+    0/0  1/0  2/0  3/0
+
+`datasette-tiles` can serve tiles using either of these standards. For the OpenStreetMap / Google Maps 0-at-the-top system, use the following URL:
+
+    /-/tiles/database-name/{z}/{x}/{y}.png
+
+For the TMS 0-at-the-bottom system, use this:
+
+    /-/tiles-tms/database-name/{z}/{x}/{y}.png
+
+### Configuring a Leaflet tile layer
+
+The following JavaScript will configure a [Leaflet TileLayer](https://leafletjs.com/reference-1.7.1.html#tilelayer) for use with this plugin:
+
+```javascript
+var tiles = leaflet.tileLayer("/-/tiles/basemap/{z}/{x}/{y}.png", {
+  minZoom: 0,
+  maxZoom: 6,
+  attribution: "\u00a9 OpenStreetMap contributors"
+});
+```
+
 ### Tile stacks
 
 `datasette-tiles` can be configured to serve tiles from multiple attached MBTiles files, searching each database in order for a tile and falling back to the next in line if that tile is not found.
 
 For a demo of this in action, visit https://datasette-tiles-demo.datasette.io/-/tiles-stack and zoom in on Japan. It should start showing [Stamen's Toner map](maps.stamen.com) of Japan once you get to zoom level 6 and 7.
 
-The `/-/tiles-stack/1/1/1.png` endpoint provides this feature.
+The `/-/tiles-stack/{z}/{x}/{y}.png` endpoint provides this feature.
 
 If you start Datasette like this:
 
@@ -62,6 +104,10 @@ Rather than rely on the order in which databases were attached, you can instead 
 You can then run Datasette like this:
 
     datasette -m metadata.json country.mbtiles world.mbtiles
+
+This endpoint serves tiles using the OpenStreetMap / Google Maps coordinate system. To load tiles using the TMS coordinate system use this endpoint instead:
+
+    /-/tiles-stack-tms/{z}/{x}/{y}.png
 
 ## Development
 

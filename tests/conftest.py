@@ -43,10 +43,10 @@ async def ds_tiles_stack_with_stack_order():
 async def ds_tiles(metadata=None):
     datasette = Datasette([], metadata=metadata or {}, memory=True)
     for db_name, tiles in (
-        ("world", [[1, 1, 1]]),
-        ("country", [[1, 1, 2], [1, 2, 2]]),
-        ("city1", [[1, 2, 2]]),
-        ("city2", [[1, 3, 3]]),
+        ("world", [[2, 1, 1]]),
+        ("country", [[2, 2, 1], [2, 2, 2]]),
+        ("city1", [[2, 2, 1]]),
+        ("city2", [[2, 3, 3]]),
     ):
         db = datasette.add_database(Database(datasette, memory_name=db_name))
         # During test runs database tables may exist already
@@ -63,7 +63,7 @@ async def ds_tiles(metadata=None):
         for tile in tiles:
             await db.execute_write(
                 "insert into tiles (zoom_level, tile_column, tile_row, tile_data) values (?, ?, ?, ?)",
-                tile + [db_name + ":" + "/".join(map(str, tile))],
+                tile + ["tms:{}:{}".format(db_name, "/".join(map(str, tile)))],
                 block=True,
             )
     await datasette.invoke_startup()

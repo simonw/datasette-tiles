@@ -21,6 +21,26 @@ async def test_tile(ds, path, expected_status_code):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "tile_path,tms_tile_path",
+    [
+        ("/-/tiles/basemap/3/6/2.png", "/-/tiles-tms/basemap/3/6/5.png"),
+        ("/-/tiles/basemap/4/10/7.png", "/-/tiles-tms/basemap/4/10/8.png"),
+    ],
+)
+async def test_tile_tms(ds, tile_path, tms_tile_path):
+    tile_response = await ds.client.get(tile_path)
+    tms_tile_response = await ds.client.get(tms_tile_path)
+    assert tile_response.status_code == 200
+    assert tms_tile_response.status_code == 200
+    assert tile_response.headers["content-type"] == "image/png"
+    assert tms_tile_response.headers["content-type"] == "image/png"
+    # They should contain identical content
+    assert tms_tile_response.content[:4] == b"\x89PNG"
+    assert tile_response.content == tms_tile_response.content
+
+
+@pytest.mark.asyncio
 async def test_tiles_index(ds):
     response = await ds.client.get("/-/tiles")
     assert response.status_code == 200
