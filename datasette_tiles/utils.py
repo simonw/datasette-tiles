@@ -64,8 +64,6 @@ def latlon_to_tile(lat, lon, zoom):
         / 2
         * 2 ** zoom
     )
-    # MBTiles are reverse OSM
-    y_tile = 2 ** zoom - y_tile - 1
     return x_tile, y_tile
 
 
@@ -85,7 +83,6 @@ def latlon_to_tile_with_adjust(lat, lon, zoom):
 
 def tile_to_latlon(x, y, zoom):
     n = 2 ** zoom
-    y = n - y - 1  # mbtiles are reverse of OSM
     lon = x / n * 360 - 180
     lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * y / n))))
     return {"lat": lat, "lon": lon}

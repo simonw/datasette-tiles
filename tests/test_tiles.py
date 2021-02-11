@@ -64,6 +64,22 @@ async def test_tiles_explorer(ds):
 
 
 @pytest.mark.asyncio
+async def test_tiles_explorer_no_javascript(ds):
+    response = await ds.client.get("/-/tiles/basemap?lat=40.9&lon=0.0&z=3")
+    assert response.status_code == 200
+    assert (
+        """
+    <img style="vertical-align: bottom" src="/-/tiles/basemap/3/3/2.png" alt=""
+        ><img style="vertical-align: bottom" src="/-/tiles/basemap/3/4/2.png" alt=""
+        ><br>
+        <img src="/-/tiles/basemap/3/3/3.png" alt=""
+        ><img src="/-/tiles/basemap/3/4/3.png" alt=""
+        >""".strip()
+        in response.text
+    )
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "i,create_table,should_be_mtiles",
     [
