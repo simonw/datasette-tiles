@@ -109,6 +109,10 @@ This endpoint serves tiles using the OpenStreetMap / Google Maps coordinate syst
 
     /-/tiles-stack-tms/{z}/{x}/{y}.png
 
+### Retina tiles
+
+Retina (double resolution) tiles are supported by `datasette-tiles` if the MBTiles database file contains 512x512 tile images as opposed to the default of 256x256. JavaScript libraries such as Leaflet will serve these tiles with a fixed 256x256 size, which will cause them to be displayed correctly by capable operating systems.
+
 ## Development
 
 To set up this plugin locally, first checkout the code. Then create a new virtual environment:
