@@ -134,6 +134,10 @@ async def explorer(datasette, request):
         default_longitude, default_latitude, default_zoom = metadata["center"].split(
             ","
         )
+    elif metadata.get("bounds"):
+        xmin, ymin, xmax, ymax = metadata["bounds"].split(",")
+        default_latitude = (float(ymax) + float(ymin)) / 2
+        default_longitude = (float(xmax) + float(xmin)) / 2
     min_zoom = 0
     max_zoom = 19
     if metadata.get("minzoom"):
